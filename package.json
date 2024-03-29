@@ -21,7 +21,9 @@
     "@antv/x6-plugin-transform": "2.1.8",
     "@antv/x6-vue-shape": "^2.1.2",
     "insert-css": "^2.0.0",
-    "vue": "^3.4.21"
+    "less": "^4.2.0",
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",

@@ -1,5 +1,10 @@
 <template>
-   <div id="container" style="width: 100%; height: 100vh"></div>
+  <div class="tools">
+    <div v-for="(item, index) in tools" :key="index">
+      {{ item.title }}
+    </div>
+  </div>
+  <div id="container" style="width: 100%; height: calc(100vh - @height);"></div>
 </template>
 <script setup>
 import { Graph, Shape } from "@antv/x6";
@@ -10,7 +15,63 @@ import { Snapline } from "@antv/x6-plugin-snapline";
 import { Keyboard } from "@antv/x6-plugin-keyboard";
 import { Clipboard } from "@antv/x6-plugin-clipboard";
 import { History } from "@antv/x6-plugin-history";
-import { onMounted } from "vue";
+import { ref, onMounted } from "vue";
+
+const tools = ref([
+  {
+    title: "保存",
+    iconClass: "save",
+    key: "save",
+  },
+  {
+    title: "撤销",
+    iconClass: "left",
+    key: "onUndo",
+  },
+  {
+    title: "前进",
+    iconClass: "right",
+    key: "onRedo",
+  },
+  {
+    title: "放大",
+    iconClass: "zoomIn",
+    key: "zoomIn",
+  },
+  {
+    title: "缩小",
+    iconClass: "zoomOut",
+    key: "zoomOut",
+  },
+  {
+    title: "居中",
+    iconClass: "center",
+    key: "centerContent",
+  },
+  {
+    title: "预览",
+    iconClass: "view",
+    key: "view",
+  },
+  {
+    title: "开启框选",
+    iconClass: "select",
+    key: "select",
+    status: false,
+  },
+  {
+    title: "开启平移",
+    iconClass: "move",
+    key: "move",
+    status: false,
+  },
+  {
+    title: "退出",
+    iconClass: "exit",
+    key: "exit",
+  },
+]);
+
 onMounted(() => {
   // 为了协助代码演示
   preWork();
@@ -21,7 +82,7 @@ onMounted(() => {
     height: 400,
     container: document.getElementById("graph-container"),
     grid: true,
-    autoResize :true,
+    autoResize: true,
     mousewheel: {
       enabled: true,
       zoomAtMousePosition: true,
@@ -96,7 +157,18 @@ onMounted(() => {
     .use(new Snapline())
     .use(new Keyboard())
     .use(new Clipboard())
-    .use(new History())
+    .use(new History());
+
+  // 创建节点
+  const node = graph.addNode({
+    x: 100,
+    y: 80,
+    width: 100,
+    height: 40,
+    label: "节点",
+    id: "node1",
+  });
+
   // #endregion
 
   // #region 初始化 stencil
@@ -516,36 +588,37 @@ function preWork() {
   stencilContainer.id = "stencil";
   const graphContainer = document.createElement("div");
   graphContainer.id = "graph-container";
-  graphContainer.style.width = 'calc(100% - 180px)';
+  graphContainer.style.width = "calc(100% - 180px)";
   container.appendChild(stencilContainer);
   container.appendChild(graphContainer);
 }
 
-function importJSON(){
- let json = graph.toJSON()
- console.log(json);
+function importJSON() {
+  let json = graph.toJSON();
+  console.log(json);
 }
 </script>
-<style>
-
+<style lang="less">
+@height: 30px;
 #container {
   width: 100%;
-  height: 100vh;
+  height: calc(100vh - @height);
   display: flex;
   justify-content: space-between;
   border: 1px solid #dfe3e8;
+  position: relative;
 }
 #stencil {
   width: 180px;
-  height: 100vh;
+  height: calc(100vh - @height);;
 }
 #graph-container {
   width: calc(100vw - 190px);
   height: 100%;
 }
-.x6-graph{
+.x6-graph {
   width: 500px;
-  height: 100vh;
+  height: calc(100vh - @height);
 }
 .x6-widget-stencil {
   width: 180px;
@@ -579,5 +652,22 @@ function importJSON(){
 }
 .x6-widget-selection-box {
   opacity: 0;
+}
+
+.tools {
+  width: 100%;
+  height: @height;
+  line-height: @height;
+  display: flex;
+  background: #fff;
+  color: #000;
+}
+
+.tools > div {
+  margin: 0 5px;
+  cursor: pointer;
+  &:hover {
+    color: #4fff26;
+  }
 }
 </style>
