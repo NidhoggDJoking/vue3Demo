@@ -1,142 +1,138 @@
 <template>
   <div class="tools">
-    <div v-for="(item, index) in tools" :key="index">
+    <div v-for="(item, index) in tools" :key="index" @click="handle(item.key)">
       {{ item.title }}
     </div>
   </div>
-  <div id="container" style="width: 100%; height: calc(100vh - @height);"></div>
+  <div id="container" style="width: 100%; height: calc(100vh - 30px)"></div>
+  <div id="minimap"></div>
 </template>
 <script setup>
-import { Graph, Shape } from "@antv/x6";
-import { Stencil } from "@antv/x6-plugin-stencil";
-import { Transform } from "@antv/x6-plugin-transform";
-import { Selection } from "@antv/x6-plugin-selection";
-import { Snapline } from "@antv/x6-plugin-snapline";
-import { Keyboard } from "@antv/x6-plugin-keyboard";
-import { Clipboard } from "@antv/x6-plugin-clipboard";
-import { History } from "@antv/x6-plugin-history";
-import { ref, onMounted } from "vue";
+import { Graph, Shape } from '@antv/x6'
+import { Stencil } from '@antv/x6-plugin-stencil'
+import { Transform } from '@antv/x6-plugin-transform'
+import { Selection } from '@antv/x6-plugin-selection'
+import { Snapline } from '@antv/x6-plugin-snapline'
+import { Keyboard } from '@antv/x6-plugin-keyboard'
+import { Clipboard } from '@antv/x6-plugin-clipboard'
+import { History } from '@antv/x6-plugin-history'
+import { MiniMap } from '@antv/x6-plugin-minimap'
+import { ref, onMounted } from 'vue'
+
+import { ExportJSON, importJSON, preWork, copyCells, delCells,selectCell,setSelectCells } from './index'
 
 const tools = ref([
   {
-    title: "保存",
-    iconClass: "save",
-    key: "save",
+    title: '保存',
+    key: 'save'
   },
   {
-    title: "撤销",
-    iconClass: "left",
-    key: "onUndo",
+    title: '撤销',
+    key: 'onUndo'
   },
   {
-    title: "前进",
-    iconClass: "right",
-    key: "onRedo",
+    title: '复制',
+    key: 'copy'
   },
   {
-    title: "放大",
-    iconClass: "zoomIn",
-    key: "zoomIn",
+    title: '删除',
+    key: 'del'
   },
   {
-    title: "缩小",
-    iconClass: "zoomOut",
-    key: "zoomOut",
+    title: '缩小',
+    key: 'zoomOut'
   },
   {
-    title: "居中",
-    iconClass: "center",
-    key: "centerContent",
+    title: '获取',
+    key: 'get'
   },
   {
-    title: "预览",
-    iconClass: "view",
-    key: "view",
+    title: '设置',
+    key: 'set'
   },
   {
-    title: "开启框选",
-    iconClass: "select",
-    key: "select",
-    status: false,
+    title: '开启框选',
+    key: 'select'
   },
   {
-    title: "开启平移",
-    iconClass: "move",
-    key: "move",
-    status: false,
+    title: '开启平移',
+    key: 'move'
   },
   {
-    title: "退出",
-    iconClass: "exit",
-    key: "exit",
-  },
-]);
+    title: '退出',
+    key: 'exit'
+  }
+])
+
+let id = ''
+
+let graph = null
 
 onMounted(() => {
   // 为了协助代码演示
-  preWork();
+  preWork()
 
   // #region 初始化画布
-  const graph = new Graph({
+  graph = new Graph({
     width: 600,
     height: 400,
-    container: document.getElementById("graph-container"),
+    container: document.getElementById('graph-container'),
     grid: true,
     autoResize: true,
     mousewheel: {
       enabled: true,
       zoomAtMousePosition: true,
-      modifiers: "ctrl",
+      modifiers: 'ctrl',
       minScale: 0.5,
-      maxScale: 3,
+      maxScale: 3
     },
     connecting: {
-      router: "manhattan",
+      router: 'manhattan',
       connector: {
-        name: "rounded",
+        name: 'rounded',
         args: {
-          radius: 8,
-        },
+          radius: 8
+        }
       },
-      anchor: "center",
-      connectionPoint: "anchor",
+      anchor: 'center',
+      connectionPoint: 'anchor',
       allowBlank: false,
       snap: {
-        radius: 20,
+        radius: 20
       },
       createEdge() {
         return new Shape.Edge({
           attrs: {
             line: {
-              stroke: "#A2B1C3",
+              stroke: '#A2B1C3',
               strokeWidth: 2,
               targetMarker: {
-                name: "block",
+                name: 'block',
                 width: 12,
-                height: 8,
-              },
-            },
+                height: 8
+              }
+            }
           },
-          zIndex: 0,
-        });
+          zIndex: 0
+        })
       },
       validateConnection({ targetMagnet }) {
-        return !!targetMagnet;
-      },
+        return !!targetMagnet
+      }
     },
     highlighting: {
       magnetAdsorbed: {
-        name: "stroke",
+        name: 'stroke',
         args: {
           padding: 14,
           attrs: {
-            fill: "#5F95FF",
-            stroke: "#5F95FF",
-          },
-        },
-      },
-    },
-  });
+            fill: '#5F95FF',
+            stroke: '#5F95FF'
+          }
+        }
+      }
+    }
+  })
   // #endregion
 
   // #region 使用插件
@@ -144,20 +140,25 @@ onMounted(() => {
     .use(
       new Transform({
         resizing: true,
-        rotating: true,
+        rotating: true
       })
     )
     .use(
       new Selection({
         rubberband: true,
         multiple: true,
-        showNodeSelectionBox: true,
+        showNodeSelectionBox: true
       })
     )
     .use(new Snapline())
     .use(new Keyboard())
     .use(new Clipboard())
-    .use(new History());
+    .use(new History())
+    .use(
+      new MiniMap({
+        container: document.getElementById('minimap')
+      })
+    )
 
   // 创建节点
   const node = graph.addNode({
@@ -165,437 +166,444 @@ onMounted(() => {
     y: 80,
     width: 100,
     height: 40,
-    label: "节点",
-    id: "node1",
-  });
+    label: '节点',
+    id: 'node1'
+  })
 
   // #endregion
 
   // #region 初始化 stencil
   const stencil = new Stencil({
-    title: "流程图",
+    title: '流程图',
     target: graph,
     stencilGraphWidth: 200,
     stencilGraphHeight: 180,
     collapsable: true,
     groups: [
       {
-        title: "基础流程图",
-        name: "group1",
+        title: '基础流程图',
+        name: 'group1'
       },
       {
-        title: "系统设计图",
-        name: "group2",
+        title: '系统设计图',
+        name: 'group2',
         graphHeight: 250,
         layoutOptions: {
-          rowHeight: 70,
-        },
-      },
+          rowHeight: 70
+        }
+      }
     ],
     layoutOptions: {
       columns: 2,
       columnWidth: 80,
-      rowHeight: 55,
-    },
-  });
-  document.getElementById("stencil").appendChild(stencil.container);
+      rowHeight: 55
+    }
+  })
+  document.getElementById('stencil').appendChild(stencil.container)
   // #endregion
 
   // #region 快捷键与事件
-  graph.bindKey(["meta+c", "ctrl+c"], () => {
-    const cells = graph.getSelectedCells();
+  graph.bindKey(['meta+c', 'ctrl+c'], () => {
+    const cells = graph.getSelectedCells()
     if (cells.length) {
-      graph.copy(cells);
+      graph.copy(cells)
     }
-    return false;
-  });
-  graph.bindKey(["meta+x", "ctrl+x"], () => {
-    const cells = graph.getSelectedCells();
+    return false
+  })
+  graph.bindKey(['meta+x', 'ctrl+x'], () => {
+    const cells = graph.getSelectedCells()
     if (cells.length) {
-      graph.cut(cells);
+      graph.cut(cells)
     }
-    return false;
-  });
-  graph.bindKey(["meta+v", "ctrl+v"], () => {
+    return false
+  })
+  graph.bindKey(['meta+v', 'ctrl+v'], () => {
     if (!graph.isClipboardEmpty()) {
-      const cells = graph.paste({ offset: 32 });
-      graph.cleanSelection();
-      graph.select(cells);
+      const cells = graph.paste({ offset: 32 })
+      graph.cleanSelection()
+      graph.select(cells)
     }
-    return false;
-  });
+    return false
+  })
 
   // undo redo
-  graph.bindKey(["meta+z", "ctrl+z"], () => {
+  graph.bindKey(['meta+z', 'ctrl+z'], () => {
     if (graph.canUndo()) {
-      graph.undo();
+      graph.undo()
     }
-    return false;
-  });
-  graph.bindKey(["meta+shift+z", "ctrl+shift+z"], () => {
+    return false
+  })
+  graph.bindKey(['meta+shift+z', 'ctrl+shift+z'], () => {
     if (graph.canRedo()) {
-      graph.redo();
+      graph.redo()
     }
-    return false;
-  });
+    return false
+  })
 
   // select all
-  graph.bindKey(["meta+a", "ctrl+a"], () => {
-    const nodes = graph.getNodes();
+  graph.bindKey(['meta+a', 'ctrl+a'], () => {
+    const nodes = graph.getNodes()
     if (nodes) {
-      graph.select(nodes);
+      graph.select(nodes)
     }
-  });
+  })
 
   // delete
-  graph.bindKey("backspace", () => {
-    const cells = graph.getSelectedCells();
+  graph.bindKey('backspace', () => {
+    const cells = graph.getSelectedCells()
     if (cells.length) {
-      graph.removeCells(cells);
+      graph.removeCells(cells)
     }
-  });
+  })
 
   // zoom
-  graph.bindKey(["ctrl+1", "meta+1"], () => {
-    const zoom = graph.zoom();
+  graph.bindKey(['ctrl+1', 'meta+1'], () => {
+    const zoom = graph.zoom()
     if (zoom < 1.5) {
-      graph.zoom(0.1);
+      graph.zoom(0.1)
     }
-  });
-  graph.bindKey(["ctrl+2", "meta+2"], () => {
-    const zoom = graph.zoom();
+  })
+  graph.bindKey(['ctrl+2', 'meta+2'], () => {
+    const zoom = graph.zoom()
     if (zoom > 0.5) {
-      graph.zoom(-0.1);
+      graph.zoom(-0.1)
     }
-  });
+  })
 
   // 控制连接桩显示/隐藏
   const showPorts = (ports, show) => {
     for (let i = 0, len = ports.length; i < len; i += 1) {
-      ports[i].style.visibility = show ? "visible" : "hidden";
+      ports[i].style.visibility = show ? 'visible' : 'hidden'
     }
-  };
-  graph.on("node:mouseenter", () => {
-    const container = document.getElementById("graph-container");
-    const ports = container.querySelectorAll(".x6-port-body");
-    showPorts(ports, true);
-  });
-  graph.on("node:mouseleave", () => {
-    const container = document.getElementById("graph-container");
-    const ports = container.querySelectorAll(".x6-port-body");
-    showPorts(ports, false);
-  });
+  }
+  graph.on('node:mouseenter', () => {
+    const container = document.getElementById('graph-container')
+    const ports = container.querySelectorAll('.x6-port-body')
+    showPorts(ports, true)
+  })
+  graph.on('node:mouseleave', () => {
+    const container = document.getElementById('graph-container')
+    const ports = container.querySelectorAll('.x6-port-body')
+    showPorts(ports, false)
+  })
   // #endregion
 
   // #region 初始化图形
   const ports = {
     groups: {
       top: {
-        position: "top",
+        position: 'top',
         attrs: {
           circle: {
             r: 4,
             magnet: true,
-            stroke: "#5F95FF",
+            stroke: '#5F95FF',
             strokeWidth: 1,
-            fill: "#fff",
+            fill: '#fff',
             style: {
-              visibility: "hidden",
-            },
-          },
-        },
+              visibility: 'hidden'
+            }
+          }
+        }
       },
       right: {
-        position: "right",
+        position: 'right',
         attrs: {
           circle: {
             r: 4,
             magnet: true,
-            stroke: "#5F95FF",
+            stroke: '#5F95FF',
             strokeWidth: 1,
-            fill: "#fff",
+            fill: '#fff',
             style: {
-              visibility: "hidden",
-            },
-          },
-        },
+              visibility: 'hidden'
+            }
+          }
+        }
       },
       bottom: {
-        position: "bottom",
+        position: 'bottom',
         attrs: {
           circle: {
             r: 4,
             magnet: true,
-            stroke: "#5F95FF",
+            stroke: '#5F95FF',
             strokeWidth: 1,
-            fill: "#fff",
+            fill: '#fff',
             style: {
-              visibility: "hidden",
-            },
-          },
-        },
+              visibility: 'hidden'
+            }
+          }
+        }
       },
       left: {
-        position: "left",
+        position: 'left',
         attrs: {
           circle: {
             r: 4,
             magnet: true,
-            stroke: "#5F95FF",
+            stroke: '#5F95FF',
             strokeWidth: 1,
-            fill: "#fff",
+            fill: '#fff',
             style: {
-              visibility: "hidden",
-            },
-          },
-        },
-      },
+              visibility: 'hidden'
+            }
+          }
+        }
+      }
     },
     items: [
       {
-        group: "top",
+        group: 'top'
       },
       {
-        group: "right",
+        group: 'right'
       },
       {
-        group: "bottom",
+        group: 'bottom'
       },
       {
-        group: "left",
-      },
-    ],
-  };
+        group: 'left'
+      }
+    ]
+  }
 
   Graph.registerNode(
-    "custom-rect",
+    'custom-rect',
     {
-      inherit: "rect",
+      inherit: 'rect',
       width: 66,
       height: 36,
       attrs: {
         body: {
           strokeWidth: 1,
-          stroke: "#5F95FF",
-          fill: "#EFF4FF",
+          stroke: '#5F95FF',
+          fill: '#EFF4FF'
         },
         text: {
           fontSize: 12,
-          fill: "#262626",
-        },
+          fill: '#262626'
+        }
       },
-      ports: { ...ports },
+      ports: { ...ports }
     },
     true
-  );
+  )
 
   Graph.registerNode(
-    "custom-polygon",
+    'custom-polygon',
     {
-      inherit: "polygon",
+      inherit: 'polygon',
       width: 66,
       height: 36,
       attrs: {
         body: {
           strokeWidth: 1,
-          stroke: "#5F95FF",
-          fill: "#EFF4FF",
+          stroke: '#5F95FF',
+          fill: '#EFF4FF'
         },
         text: {
           fontSize: 12,
-          fill: "#262626",
-        },
+          fill: '#262626'
+        }
       },
       ports: {
         ...ports,
         items: [
           {
-            group: "top",
+            group: 'top'
           },
           {
-            group: "bottom",
-          },
-        ],
-      },
+            group: 'bottom'
+          }
+        ]
+      }
     },
     true
-  );
+  )
 
   Graph.registerNode(
-    "custom-circle",
+    'custom-circle',
     {
-      inherit: "circle",
+      inherit: 'circle',
       width: 45,
       height: 45,
       attrs: {
         body: {
           strokeWidth: 1,
-          stroke: "#5F95FF",
-          fill: "#EFF4FF",
+          stroke: '#5F95FF',
+          fill: '#EFF4FF'
         },
         text: {
           fontSize: 12,
-          fill: "#262626",
-        },
+          fill: '#262626'
+        }
       },
-      ports: { ...ports },
+      ports: { ...ports }
     },
     true
-  );
+  )
 
   Graph.registerNode(
-    "custom-image",
+    'custom-image',
     {
-      inherit: "rect",
+      inherit: 'rect',
       width: 52,
       height: 52,
       markup: [
         {
-          tagName: "rect",
-          selector: "body",
+          tagName: 'rect',
+          selector: 'body'
         },
         {
-          tagName: "image",
+          tagName: 'image'
         },
         {
-          tagName: "text",
-          selector: "label",
-        },
+          tagName: 'text',
+          selector: 'label'
+        }
       ],
       attrs: {
         body: {
-          stroke: "#5F95FF",
-          fill: "#5F95FF",
+          stroke: '#5F95FF',
+          fill: '#5F95FF'
         },
         image: {
           width: 26,
           height: 26,
           refX: 13,
-          refY: 16,
+          refY: 16
         },
         label: {
           refX: 3,
           refY: 2,
-          textAnchor: "left",
-          textVerticalAnchor: "top",
+          textAnchor: 'left',
+          textVerticalAnchor: 'top',
           fontSize: 12,
-          fill: "#fff",
-        },
+          fill: '#fff'
+        }
       },
-      ports: { ...ports },
+      ports: { ...ports }
     },
     true
-  );
+  )
 
   const r1 = graph.createNode({
-    shape: "custom-rect",
-    label: "开始",
+    shape: 'custom-rect',
+    label: '开始',
     attrs: {
       body: {
         rx: 20,
-        ry: 26,
-      },
-    },
-  });
+        ry: 26
+      }
+    }
+  })
   const r2 = graph.createNode({
-    shape: "custom-rect",
-    label: "过程",
-  });
+    shape: 'custom-rect',
+    label: '过程'
+  })
   const r3 = graph.createNode({
-    shape: "custom-rect",
+    shape: 'custom-rect',
     attrs: {
       body: {
         rx: 6,
-        ry: 6,
-      },
+        ry: 6
+      }
     },
-    label: "可选过程",
-  });
+    label: '可选过程'
+  })
   const r4 = graph.createNode({
-    shape: "custom-polygon",
+    shape: 'custom-polygon',
     attrs: {
       body: {
-        refPoints: "0,10 10,0 20,10 10,20",
-      },
+        refPoints: '0,10 10,0 20,10 10,20'
+      }
     },
-    label: "决策",
-  });
+    label: '决策'
+  })
   const r5 = graph.createNode({
-    shape: "custom-polygon",
+    shape: 'custom-polygon',
     attrs: {
       body: {
-        refPoints: "10,0 40,0 30,20 0,20",
-      },
+        refPoints: '10,0 40,0 30,20 0,20'
+      }
     },
-    label: "数据",
-  });
+    label: '数据'
+  })
   const r6 = graph.createNode({
-    shape: "custom-circle",
-    label: "连接",
-  });
-  stencil.load([r1, r2, r3, r4, r5, r6], "group1");
+    shape: 'custom-circle',
+    label: '连接'
+  })
+  stencil.load([r1, r2, r3, r4, r5, r6], 'group1')
 
   const imageShapes = [
     {
-      label: "Client",
+      label: 'Client',
       image:
-        "https://gw.alipayobjects.com/zos/bmw-prod/687b6cb9-4b97-42a6-96d0-34b3099133ac.svg",
+        'https://gw.alipayobjects.com/zos/bmw-prod/687b6cb9-4b97-42a6-96d0-34b3099133ac.svg'
     },
     {
-      label: "Http",
+      label: 'Http',
       image:
-        "https://gw.alipayobjects.com/zos/bmw-prod/dc1ced06-417d-466f-927b-b4a4d3265791.svg",
+        'https://gw.alipayobjects.com/zos/bmw-prod/dc1ced06-417d-466f-927b-b4a4d3265791.svg'
     },
     {
-      label: "Api",
+      label: 'Api',
       image:
-        "https://gw.alipayobjects.com/zos/bmw-prod/c55d7ae1-8d20-4585-bd8f-ca23653a4489.svg",
+        'https://gw.alipayobjects.com/zos/bmw-prod/c55d7ae1-8d20-4585-bd8f-ca23653a4489.svg'
     },
     {
-      label: "Sql",
+      label: 'Sql',
       image:
-        "https://gw.alipayobjects.com/zos/bmw-prod/6eb71764-18ed-4149-b868-53ad1542c405.svg",
+        'https://gw.alipayobjects.com/zos/bmw-prod/6eb71764-18ed-4149-b868-53ad1542c405.svg'
     },
     {
-      label: "Clound",
+      label: 'Clound',
       image:
-        "https://gw.alipayobjects.com/zos/bmw-prod/c36fe7cb-dc24-4854-aeb5-88d8dc36d52e.svg",
+        'https://gw.alipayobjects.com/zos/bmw-prod/c36fe7cb-dc24-4854-aeb5-88d8dc36d52e.svg'
     },
     {
-      label: "Mq",
+      label: 'Mq',
       image:
-        "https://gw.alipayobjects.com/zos/bmw-prod/2010ac9f-40e7-49d4-8c4a-4fcf2f83033b.svg",
-    },
-  ];
+        'https://gw.alipayobjects.com/zos/bmw-prod/2010ac9f-40e7-49d4-8c4a-4fcf2f83033b.svg'
+    }
+  ]
   const imageNodes = imageShapes.map((item) =>
     graph.createNode({
-      shape: "custom-image",
+      shape: 'custom-image',
       label: item.label,
       attrs: {
         image: {
-          "xlink:href": item.image,
-        },
-      },
+          'xlink:href': item.image
+        }
+      }
     })
-  );
-  stencil.load(imageNodes, "group2");
+  )
+  stencil.load(imageNodes, 'group2')
   // #endregion
-});
-function preWork() {
-  // 这里协助演示的代码，在实际项目中根据实际情况进行调整
-  const container = document.getElementById("container");
-  const stencilContainer = document.createElement("div");
-  stencilContainer.id = "stencil";
-  const graphContainer = document.createElement("div");
-  graphContainer.id = "graph-container";
-  graphContainer.style.width = "calc(100% - 180px)";
-  container.appendChild(stencilContainer);
-  container.appendChild(graphContainer);
-}
+})
 
-function importJSON() {
-  let json = graph.toJSON();
-  console.log(json);
+function handle(val) {
+  switch (val) {
+    case 'save':
+      importJSON(graph)
+      break
+    case 'onUndo':
+      ExportJSON(graph)
+      break
+    case 'copy':
+      copyCells(graph)
+      break
+    case 'del':
+      delCells(graph)
+      break
+      case 'get':
+      id =  selectCell(graph)[0].id
+      break
+    case 'set':
+    setSelectCells(graph,id)
+      break
+  }
 }
 </script>
 <style lang="less">
@@ -610,7 +618,7 @@ function importJSON() {
 }
 #stencil {
   width: 180px;
-  height: calc(100vh - @height);;
+  height: calc(100vh - @height);
 }
 #graph-container {
   width: calc(100vw - 190px);
@@ -669,5 +677,13 @@ function importJSON() {
   &:hover {
     color: #4fff26;
   }
+}
+
+#minimap {
+  position: absolute;
+  width: 300px;
+  height: 200px;
+  right: 0;
+  bottom: 0;
 }
 </style>
