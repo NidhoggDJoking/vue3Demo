@@ -23,7 +23,9 @@ git push -f git@gitee.com:NidhoggDJoking/vue3-demo.git master:gh-pages
 
 # 本地操作场景专用
 
-cd -
+# cd -
+
+cd ..
 
 rm -rf dist
 
