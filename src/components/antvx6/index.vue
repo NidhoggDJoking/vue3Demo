@@ -489,6 +489,7 @@ onMounted(() => {
   )
 
   const r1 = graph.createNode({
+    id:'createNodeIdTest',
     shape: 'custom-rect',
     label: '开始',
     attrs: {
@@ -496,6 +497,10 @@ onMounted(() => {
         rx: 20,
         ry: 26
       }
+    },
+    data:{
+      id: '9527',
+      name: '业务数据'
     }
   })
   const r2 = graph.createNode({
@@ -598,7 +603,10 @@ function handle(val) {
       delCells(graph)
       break
       case 'get':
-      id =  selectCell(graph)[0].id
+        console.log('====================================');
+        console.log(selectCell(graph));
+        console.log('====================================');
+      // id =  selectCell(graph)[0].id
       break
     case 'set':
     setSelectCells(graph,id)

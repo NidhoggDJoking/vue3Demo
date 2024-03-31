@@ -24,8 +24,8 @@ export function importJSON(graph) {
   console.log(json);
 }
 
-export function selectCell(graph){
-  const cells =graph.getSelectedCells()
+export function selectCell(graph) {
+  const cells = graph.getSelectedCells()
   console.log(cells);
   return cells
 }
@@ -39,29 +39,35 @@ export function delCells(graph) {
 // 手动复制节点
 export function copyCells(graph) {
   // 复制
-const cells =graph.getSelectedCells()
-if(cells&&cells.length){
+  const cells = graph.getSelectedCells()
+  if (cells && cells.length) {
     const Id = cells[0].id
     const cell = graph.getCellById(Id)
-    if(cell.isEdge()){
-        //连接线不可复制、清除
-        graph.cleanClipboard()
-    }else{
-        graph.copy(cells,{offset:30,useLocalStorage:true})
+    if (cell.isEdge()) {
+      //连接线不可复制、清除
+      graph.cleanClipboard()
+    } else {
+      graph.copy(cells, { offset: 30, useLocalStorage: true })
     }
-}
- 
- // 粘贴
-if(!graph.isClipboardEmpty()){
-    const cells =graph.paste({offset:32})
+  }
+
+  // 粘贴
+  if (!graph.isClipboardEmpty()) {
+    const cells = graph.paste({ offset: 32 })
     graph.cleanSelection()
     graph.select(cells)
-}
-return false
+  }
+  return false
 }
 
 
-export function setSelectCells(graph,id = "4d0bae60-5b66-43c4-9c52-1315a7d875ae"){
+export function setSelectCells(graph, id = "4d0bae60-5b66-43c4-9c52-1315a7d875ae") {
   console.log(id)
   graph.select(id)
+}
+
+
+// 导出入json数据
+export function importNodeList(graph, data) {
+  graph.fromJSON(JSON.parse(data))
 }
