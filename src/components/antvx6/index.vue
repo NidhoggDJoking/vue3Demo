@@ -20,7 +20,7 @@ import { MiniMap } from '@antv/x6-plugin-minimap'
 import { ref, onMounted } from 'vue'
 
 import { ExportJSON, importJSON, preWork, copyCells, delCells,selectCell,setSelectCells } from './index'
-
+import operation from './operation'
 const tools = ref([
   {
     title: '保存',
@@ -39,10 +39,6 @@ const tools = ref([
     key: 'del'
   },
   {
-    title: '缩小',
-    key: 'zoomOut'
-  },
-  {
     title: '获取',
     key: 'get'
   },
@@ -51,16 +47,8 @@ const tools = ref([
     key: 'set'
   },
   {
-    title: '开启框选',
-    key: 'select'
-  },
-  {
-    title: '开启平移',
-    key: 'move'
-  },
-  {
-    title: '退出',
-    key: 'exit'
+    title: '分组',
+    key: 'group'
   }
 ])
 
@@ -156,6 +144,8 @@ onMounted(() => {
     .use(new History())
     .use(
       new MiniMap({
+        width: 300,
+        height: 200,
         container: document.getElementById('minimap')
       })
     )
@@ -171,6 +161,8 @@ onMounted(() => {
   })
 
   // #endregion
+  operation(graph)
+
 
   // #region 初始化 stencil
   const stencil = new Stencil({
@@ -202,91 +194,7 @@ onMounted(() => {
   document.getElementById('stencil').appendChild(stencil.container)
   // #endregion
 
-  // #region 快捷键与事件
-  graph.bindKey(['meta+c', 'ctrl+c'], () => {
-    const cells = graph.getSelectedCells()
-    if (cells.length) {
-      graph.copy(cells)
-    }
-    return false
-  })
-  graph.bindKey(['meta+x', 'ctrl+x'], () => {
-    const cells = graph.getSelectedCells()
-    if (cells.length) {
-      graph.cut(cells)
-    }
-    return false
-  })
-  graph.bindKey(['meta+v', 'ctrl+v'], () => {
-    if (!graph.isClipboardEmpty()) {
-      const cells = graph.paste({ offset: 32 })
-      graph.cleanSelection()
-      graph.select(cells)
-    }
-    return false
-  })
 
-  // undo redo
-  graph.bindKey(['meta+z', 'ctrl+z'], () => {
-    if (graph.canUndo()) {
-      graph.undo()
-    }
-    return false
-  })
-  graph.bindKey(['meta+shift+z', 'ctrl+shift+z'], () => {
-    if (graph.canRedo()) {
-      graph.redo()
-    }
-    return false
-  })
-
-  // select all
-  graph.bindKey(['meta+a', 'ctrl+a'], () => {
-    const nodes = graph.getNodes()
-    if (nodes) {
-      graph.select(nodes)
-    }
-  })
-
-  // delete
-  graph.bindKey('backspace', () => {
-    const cells = graph.getSelectedCells()
-    if (cells.length) {
-      graph.removeCells(cells)
-    }
-  })
-
-  // zoom
-  graph.bindKey(['ctrl+1', 'meta+1'], () => {
-    const zoom = graph.zoom()
-    if (zoom < 1.5) {
-      graph.zoom(0.1)
-    }
-  })
-  graph.bindKey(['ctrl+2', 'meta+2'], () => {
-    const zoom = graph.zoom()
-    if (zoom > 0.5) {
-      graph.zoom(-0.1)
-    }
-  })
-
-  // 控制连接桩显示/隐藏
-  const showPorts = (ports, show) => {
-    for (let i = 0, len = ports.length; i < len; i += 1) {
-      ports[i].style.visibility = show ? 'visible' : 'hidden'
-    }
-  }
-  graph.on('node:mouseenter', () => {
-    const container = document.getElementById('graph-container')
-    const ports = container.querySelectorAll('.x6-port-body')
-    showPorts(ports, true)
-  })
-  graph.on('node:mouseleave', () => {
-    const container = document.getElementById('graph-container')
-    const ports = container.querySelectorAll('.x6-port-body')
-    showPorts(ports, false)
-  })
-  // #endregion
 
   // #region 初始化图形
   const ports = {
