@@ -60,14 +60,14 @@ export function copyCells(graph) {
   return false
 }
 
-
+// 选中指定的节点/边。需要注意的是，该方法不会取消选中当前选中的节点/边，而是将指定的节点/边追加到选区中。如果同时需要取消选中当前选中的节点/边，请使用 resetSelection(...) 方法。
 export function setSelectCells(graph, id = "4d0bae60-5b66-43c4-9c52-1315a7d875ae") {
   console.log(id)
   graph.select(id)
 }
 
 
-// 导出入json数据
+// 导入json数据
 export function importNodeList(graph, data) {
   graph.fromJSON(JSON.parse(data))
 }
