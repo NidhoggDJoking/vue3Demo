@@ -1,9 +1,10 @@
 <script setup>
 import antv from './components/antvx6/index.vue'
+import treeTransfer from './components/treeTransfer/index.vue'
 </script>
 
 <template>
-  <antv></antv>
+  <treeTransfer></treeTransfer>
 </template>
 
 <style scoped>
