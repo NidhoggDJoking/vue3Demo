@@ -26,9 +26,9 @@
     </div>
 </template>
 
-<script setup>
+<script  setup>
 import { ref } from "vue";
-import { VueDraggable } from "vue-draggable-plus";
+import { VueDraggable,DraggableEvent } from "vue-draggable-plus";
 
 const userList = ref([
     {
@@ -72,6 +72,7 @@ const userList = ref([
 const handleClick = () => {
     console.log("click");
 };
+
 </script>
 
 <style scoped></style>

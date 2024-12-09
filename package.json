@@ -26,6 +26,7 @@
     "element-plus": "^2.8.6",
     "insert-css": "^2.0.0",
     "less": "^4.2.0",
+    "sortablejs": "^1.15.6",
     "vue": "^3.4.21",
     "vue-draggable-plus": "^0.6.0",
     "vue-router": "^4.3.0"
