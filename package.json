@@ -23,16 +23,19 @@
     "@antv/x6-plugin-stencil": "2.1.5",
     "@antv/x6-plugin-transform": "2.1.8",
     "@antv/x6-vue-shape": "^2.1.2",
+    "dayjs": "^1.11.13",
     "element-plus": "^2.8.6",
     "insert-css": "^2.0.0",
     "less": "^4.2.0",
     "sortablejs": "^1.15.6",
     "vue": "^3.4.21",
     "vue-draggable-plus": "^0.6.0",
+    "vue-i18n": "^11.1.2",
     "vue-router": "^4.3.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
+    "sass": "^1.85.1",
     "vite": "^5.2.0"
   },
   "keywords": [

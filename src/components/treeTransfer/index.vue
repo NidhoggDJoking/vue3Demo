@@ -24,7 +24,7 @@
   </template>
   <script setup>
   import { ref, defineExpose, onMounted } from "vue";
-  import TreeTransfer from "./TreeTransfer.vue";
+  import TreeTransfer from "./treeTransfer.vue";
   
   const checkedIds = ref([]);
   const titles = ref(["左标题", "右标题"]);
