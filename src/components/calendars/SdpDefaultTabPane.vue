@@ -854,7 +854,7 @@ export default {
     },
 
     handleConfirm() {
-      this.$emit("confirm", this.saveSelectData);
+      this.$emit("confirm", this.saveSelectData, this.transformData.currentPeriod);
     },
     handleClose() {
       this.$emit("close", this.saveSelectData);

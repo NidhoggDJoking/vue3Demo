@@ -12,12 +12,17 @@ import calendars from "./components/calendars/SdpDefaultTabPane.vue";
 const visible = ref(false);
 const calendarsRef = ref(null);
 
-const confirm = (val) => {
+const confirm = (val,currentPeriod = []) => {
   for (let key in val) {
     val[key].forEach((timestamp) => {
       console.log(dayjs(timestamp).format("YYYY-MM-DD"));
     });
   }
+  let arr = []
+  currentPeriod.forEach((period) => {
+    arr.push(period.label)
+  })
+  console.log('arr==>',arr)
   visible.value = false;
 };
 
