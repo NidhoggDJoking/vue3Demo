@@ -54,30 +54,7 @@ export const MONTH_LANG_NAMES = function() {
   return list
 }
 
-export const eventCompareLabelDic = function () {
-  return {
-    [EVENT_COMPARE_TYPE.CUSTOM]: this.$t('sdp.views.defaultCustom'),
-    [EVENT_COMPARE_TYPE.COMPARE_LAST_TIME]: this.$t('sdp.views.compareLastTime'),
-    [EVENT_COMPARE_TYPE.COMPARE_N_TIME]: this.$t('sdp.views.compareNTimes'),
-  }
-}
 
-export const getCompareList = function (list = [EVENT_COMPARE_TYPE.CUSTOM, EVENT_COMPARE_TYPE.COMPARE_LAST_TIME, EVENT_COMPARE_TYPE.COMPARE_N_TIME], disabled = true) {
-  let sortList = [EVENT_COMPARE_TYPE.CUSTOM, EVENT_COMPARE_TYPE.COMPARE_LAST_TIME, EVENT_COMPARE_TYPE.COMPARE_N_TIME]
-  if (list && list.length) {
-    sortList = list
-  }
-  const dic = {
-    [EVENT_COMPARE_TYPE.CUSTOM]: { label: this.$t('sdp.views.defaultCustom'), value: EVENT_COMPARE_TYPE.CUSTOM, disabled: disabled && true },
-    [EVENT_COMPARE_TYPE.COMPARE_LAST_TIME]: { label: this.$t('sdp.views.compareLastTime'), value: EVENT_COMPARE_TYPE.COMPARE_LAST_TIME },
-    [EVENT_COMPARE_TYPE.COMPARE_N_TIME]: { label: this.$t('sdp.views.compareNTimes'), value: EVENT_COMPARE_TYPE.COMPARE_N_TIME },
-  }
-
-  return sortList.reduce((pre, cur) => {
-    pre.push(dic[cur])
-    return pre
-  }, [])
-}
 
 export const PERIOD = {
   currentPeriod: 'currentPeriod',
